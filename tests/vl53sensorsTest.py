@@ -6,7 +6,7 @@ import RPi.GPIO as GPIO
 
 
 
-sensors = [24] #SEM STAČÍ NASTAVIT XSHUT PINY
+sensors = [23, 24] #SEM STAČÍ NASTAVIT XSHUT PINY
 
 
 
@@ -31,18 +31,19 @@ for sensor in sensors:
 time.sleep(0.5)
 
 # Create one object per VL53L0X passing the address to give to
-tofs = []
+tofs = [VL53L0X.VL53L0X(i2c_address=addresses[0])]
 
-for i in range(len(sensors)):
-    tofs.append(VL53L0X.VL53L0X(address=addresses[i]))
+
 
 # Set shutdown pin high for the first VL53L0X then 
 # call to start ranging 
 
-for i in range(sensors):
+
+for i in range(len(sensors)):
     GPIO.output(sensors[i], GPIO.HIGH)
     time.sleep(0.50)
-    tofs[i].start_ranging(VL53L0X.VL53L0X_BETTER_ACCURACY_MODE)
+    tofs.append(VL53L0X.VL53L0X(i2c_address=addresses[i]))
+    tofs[len(tofs)-1].start_ranging(VL53L0X.Vl53l0xAccuracyMode.BETTER)
 
 timing = tofs[0].get_timing()
 if (timing < 20000):
