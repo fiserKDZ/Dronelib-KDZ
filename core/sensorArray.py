@@ -31,22 +31,32 @@ class vl53l0x:
             return self.value
         else:
             return -1
+    
+    def pvalue(self):
+        offset = 400
+        if self.online:
+            if self.value > offset:
+                return 0
+            return offset - self.value
+        else:
+            return 0
 
-class sensorArray:
+
+class SensorArray:
     sensors = []
 
     def __init__(self) -> None:
             
         xshut = [
             #Side sensors
+            DigitalInOut(board.D18),
+            DigitalInOut(board.D27),
+            DigitalInOut(board.D22),
             DigitalInOut(board.D4),
             DigitalInOut(board.D14),
             DigitalInOut(board.D15),
             DigitalInOut(board.D23),
             DigitalInOut(board.D17),
-            DigitalInOut(board.D18),
-            DigitalInOut(board.D27),
-            DigitalInOut(board.D22),
             #Bottom sensor
             DigitalInOut(board.D24)
         ]
@@ -93,7 +103,7 @@ class sensorArray:
 
 # DEMO - run this code to see the output of the sensor array
 if __name__ == "__main__":
-    sa = sensorArray()
+    sa = SensorArray()
     while True:
         sa.read()
         sa.print()
