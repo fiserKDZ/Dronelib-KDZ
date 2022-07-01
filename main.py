@@ -52,9 +52,9 @@ while True:
             if pval.z < -height:
                 pval.z = -height
     
-    pval.limit(400)
+    #pval.limit(400)
     
-    print(round(pval.x), round(pval.y), round(pval.z))
+    print("Values: {0: >5} {1: >5} {2: >5}".format(round(pval.x), round(pval.y), round(pval.z)), end="\r")
 
 
 

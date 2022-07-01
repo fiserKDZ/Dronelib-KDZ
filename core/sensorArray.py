@@ -18,7 +18,9 @@ class vl53l0x:
             self.sensor = VL53L0X(i2c)     
             self.online = True
             self.sensor.set_address(address)
-            self.sensor.measurement_timing_budget = 20000
+            self.sensor.__enter__()
+#            self.sensor.measurement_timing_budget = 33000
+            self.sensor.measurement_timing_budget = 50000
             print("SUCCESS: Sensor id: " + str(id) + " is ONLINE!")
         except OSError as e:
             print("ERROR: Sensor id: " + str(id) + " is OFFLINE:", e)
@@ -28,13 +30,17 @@ class vl53l0x:
     def read(self):
         if self.online:
             self.value = self.sensor.range
+            if self.value > 2000:
+                self.value = -1
+            if self.value < 1:
+                self.value = -1
             return self.value
         else:
             return -1
     
     def pvalue(self):
-        offset = 400
-        if self.online:
+        offset = 500
+        if self.online and self.value != -1:
             if self.value > offset:
                 return 0
             return offset - self.value
@@ -82,10 +88,15 @@ class SensorArray:
         for sensor in self.sensors:
             sensor.read()
 
+    def printHead(self):
+        for sensor in range(len(self.sensors)):
+            print("{0: >8} ".format(str(sensor) + ". TOF"), end="")
+        print(" ")
     def print(self):
-        print("---Sensors---")
         for sensor in self.sensors:
-            print("S" + str(sensor.id) + " : " + str(sensor.value))
+            print("{0: >8} ".format(round(sensor.value)), end="")
+        
+        print ("", end="\r")
 
         
 # there is a helpful list of pre-designated I2C addresses for various I2C devices at
@@ -104,6 +115,8 @@ class SensorArray:
 # DEMO - run this code to see the output of the sensor array
 if __name__ == "__main__":
     sa = SensorArray()
+    sa.printHead()
     while True:
         sa.read()
         sa.print()
+        time.sleep(0.05)
