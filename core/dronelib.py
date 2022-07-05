@@ -44,6 +44,10 @@ class DroneLib:
     EEPROM_WRITE = 250
     REBOOT = 68
 
+    #CONFIGURATION
+
+    BATERY_MIN = 6.5 #Minimal battery voltage
+
     DEFAULT_STICK_POSITION = [1000,1500,1500,1500,1000,1500,1000,2000]
 
     def __init__(self, serPort):
@@ -56,6 +60,7 @@ class DroneLib:
         self.altitude = {'estalt':0,'vario':0,'elapsed':0,'timestamp':0}
         self.message = {'angx':0,'angy':0,'heading':0,'roll':0,'pitch':0,'yaw':0,'throttle':0,'elapsed':0,'timestamp':0}
         self.vtxConfig = {'device':0, 'band':0, 'channel':0, 'power':0, 'pit':0, 'unknown':0}
+        self.analog = {'vbat':0, 'powerMeter':0, 'rssi':0, 'txPower':0, 'elapsed':0, 'timestamp':0}
         self.temp = ();
         self.temp2 = ();
         self.elapsed = 0
@@ -166,11 +171,9 @@ class DroneLib:
     def update(self, sticks):
         timer = 0
         start = time.time()
-        # while timer < 5:
         try:
             #Roll, Pitch, Yaw, Throttle, AUX1, AUX2, AUX3, AUX4
-            data = sticks
-            self.sendCMD(16,DroneLib.SET_RAW_RC,data,'HHHHHHHH')
+            self.sendCMD(16,DroneLib.SET_RAW_RC,sticks,'HHHHHHHH')
             
             while True:
                 header = self.ser.read().decode('utf-8')
@@ -186,10 +189,8 @@ class DroneLib:
             time.sleep(0.01)
 
             self.getData(self.ATTITUDE)
-            #timer = timer + (time.time() - start)
-            #start =  time.time()
         except Exception as e:
-            print("arming err", e)
+            print("Drone communication error :::", e)
 
     def disarm(self):
         timer = 0
@@ -349,6 +350,18 @@ class DroneLib:
                     temp = struct.unpack('<b',data)
                     self.vtxConfig['unknown'] = temp[0]
                     return self.vtxConfig
+            
+            elif cmd == DroneLib.ANALOG:
+                print("!!! Recieved STATUS, data length:", datalength)
+                temp = struct.unpack('<'+'h' + 'b' + 'h' + 'h' + 'h',data)
+                self.analog['vbat']=temp[0]/10
+                #self.analog['powerMeter']=temp[1] #Random byte appears here idk why
+                self.analog['powerMeter']=temp[2]
+                self.analog['rssi']=temp[3]
+                self.analog['txPower']=temp[4]
+                self.analog['elapsed']=round(elapsed,3)
+                self.analog['timestamp']="%0.2f" % (time.time(),) 
+                return self.analog
             else:
                 return "No return error!"
         except Exception as error:

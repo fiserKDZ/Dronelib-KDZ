@@ -15,6 +15,10 @@ if __name__ == "__main__":
     message = "angx = {:+.2f} \t angy = {:+.2f} \t heading = {:+.2f} \t elapsed = {:+.4f} \t".format(float(drone.attitude['angx']),float(drone.attitude['angy']),float(drone.attitude['heading']),float(drone.attitude['elapsed']))
     print("Recieved telemetry: ", message)
 
+    drone.getData(drone.ANALOG)
+
+    print("Battery: ", drone.analog['vbat'])
+
 
     print("Arming")
     drone.arm()
