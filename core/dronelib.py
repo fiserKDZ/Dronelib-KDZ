@@ -44,7 +44,10 @@ class DroneLib:
     EEPROM_WRITE = 250
     REBOOT = 68
 
+    DEFAULT_STICK_POSITION = [1000,1500,1500,1500,1000,1500,1000,2000]
+
     def __init__(self, serPort):
+        print("Connecting the drone on port: " + serPort)
         self.PIDcoef = {'rp':0,'ri':0,'rd':0,'pp':0,'pi':0,'pd':0,'yp':0,'yi':0,'yd':0}
         self.rcChannels = {'roll':0,'pitch':0,'yaw':0,'throttle':0,'elapsed':0,'timestamp':0}
         self.rawIMU = {'ax':0,'ay':0,'az':0,'gx':0,'gy':0,'gz':0,'mx':0,'my':0,'mz':0,'elapsed':0,'timestamp':0}
@@ -83,6 +86,13 @@ class DroneLib:
                     time.sleep(0.1)
         except Exception as error:
             print ("\n\nError opening "+self.ser.port+" port.\n"+str(error)+"\n\n")
+
+        
+    
+        print("Rebooting the board ... eta 3s")
+        self.reboot()
+        self.update(self.DEFAULT_STICK_POSITION)
+        print("Drone READY!")
 
     def sendCMD(self, data_length, code, data, data_format):
         checksum = 0
@@ -156,28 +166,30 @@ class DroneLib:
     def update(self, sticks):
         timer = 0
         start = time.time()
-        while timer < 5:
-            try:
-                #Roll, Pitch, Yaw, Throttle, AUX1, AUX2, AUX3, AUX4
-                data = sticks
-                self.sendCMD(16,DroneLib.SET_RAW_RC,data,'HHHHHHHH')
-                
-                while True:
-                    header = self.ser.read().decode('utf-8')
-                    if header == '$':
-                        header = header+self.ser.read(2).decode('utf-8')
-                        break
-                datalength = struct.unpack('<b', self.ser.read())[0]
-                code = struct.unpack('<b', self.ser.read())
-                data = self.ser.read(datalength)
-                self.ser.flushInput()
-                self.ser.flushOutput()
-                
-                time.sleep(0.05)
-                timer = timer + (time.time() - start)
-                start =  time.time()
-            except Exception as e:
-                print("arming err", e)
+        # while timer < 5:
+        try:
+            #Roll, Pitch, Yaw, Throttle, AUX1, AUX2, AUX3, AUX4
+            data = sticks
+            self.sendCMD(16,DroneLib.SET_RAW_RC,data,'HHHHHHHH')
+            
+            while True:
+                header = self.ser.read().decode('utf-8')
+                if header == '$':
+                    header = header+self.ser.read(2).decode('utf-8')
+                    break
+            datalength = struct.unpack('<b', self.ser.read())[0]
+            code = struct.unpack('<b', self.ser.read())
+            data = self.ser.read(datalength)
+            self.ser.flushInput()
+            self.ser.flushOutput()
+            
+            time.sleep(0.01)
+
+            self.getData(self.ATTITUDE)
+            #timer = timer + (time.time() - start)
+            #start =  time.time()
+        except Exception as e:
+            print("arming err", e)
 
     def disarm(self):
         timer = 0
@@ -440,3 +452,9 @@ class DroneLib:
                 return "No return error!"
         except Exception as error:
             print (error)
+
+    def reboot(self):
+        self.sendCMD(0,self.REBOOT,[],'')
+        self.ser.close()
+        time.sleep(3)
+        self.ser.open()

@@ -20,7 +20,7 @@ class vl53l0x:
             self.sensor.set_address(address)
             self.sensor.__enter__()
 #            self.sensor.measurement_timing_budget = 33000
-            self.sensor.measurement_timing_budget = 50000
+            self.sensor.measurement_timing_budget = 25000
             print("SUCCESS: Sensor id: " + str(id) + " is ONLINE!")
         except OSError as e:
             print("ERROR: Sensor id: " + str(id) + " is OFFLINE:", e)
@@ -29,7 +29,15 @@ class vl53l0x:
 
     def read(self):
         if self.online:
-            self.value = self.sensor.range
+            try:
+                self.value = self.sensor.range
+            except OSError as e:
+                #self.online = False
+                #TODO Reboot the sensor on new thread!
+                print(time.time(), "Sensor disconnected :( ... TODO ... id=" + str(self.id))
+                #self.powerPin.value = False
+                self.value = -1
+                return -1
             if self.value > 2000:
                 self.value = -1
             if self.value < 1:
@@ -39,7 +47,7 @@ class vl53l0x:
             return -1
     
     def pvalue(self):
-        offset = 500
+        offset = 1000
         if self.online and self.value != -1:
             if self.value > offset:
                 return 0
@@ -52,8 +60,15 @@ class SensorArray:
     sensors = []
 
     def __init__(self) -> None:
-            
+
+        
         xshut = [
+            DigitalInOut(board.D4),
+            DigitalInOut(board.D14),
+            DigitalInOut(board.D15)
+        ]
+
+        """xshut = [
             #Side sensors
             DigitalInOut(board.D18),
             DigitalInOut(board.D27),
@@ -65,7 +80,7 @@ class SensorArray:
             DigitalInOut(board.D17),
             #Bottom sensor
             DigitalInOut(board.D24)
-        ]
+        ]"""
 
         i2c = board.I2C()
 
@@ -119,4 +134,31 @@ if __name__ == "__main__":
     while True:
         sa.read()
         sa.print()
-        time.sleep(0.05)
+        #time.sleep(0.05)
+
+
+
+class PIDController:
+    def __init__(self, kp, ki, kd, min, max):
+        self.kp = kp
+        self.ki = ki
+        self.kd = kd
+        self.min = min
+        self.max = max
+        self.lastError = 0
+        self.integral = 0
+        self.lastTime = time.time()
+
+    def update(self, error):
+        now = time.time()
+        dt = now - self.lastTime
+        self.lastTime = now
+        self.integral += error * dt
+        derivative = (error - self.lastError) / dt
+        output = self.kp * error + self.ki * self.integral + self.kd * derivative
+        self.lastError = error
+        if output > self.max:
+            output = self.max
+        elif output < self.min:
+            output = self.min
+        return output
