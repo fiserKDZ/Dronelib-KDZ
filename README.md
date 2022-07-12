@@ -8,6 +8,8 @@
 
 ## Documentation
 
+[Author documentation link](./doc/index.md)
+
 To generate documentation, run
 `python -m pydoc -w core\dronelib.py`
 Installation step is the prerequisite.
