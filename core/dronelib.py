@@ -169,26 +169,22 @@ class DroneLib:
         print("ARMED [100%]")
     
     def update(self, sticks):
-        timer = 0
-        start = time.time()
         try:
             #Roll, Pitch, Yaw, Throttle, AUX1, AUX2, AUX3, AUX4
             self.sendCMD(16,DroneLib.SET_RAW_RC,sticks,'HHHHHHHH')
             
-            while True:
-                header = self.ser.read().decode('utf-8')
-                if header == '$':
-                    header = header+self.ser.read(2).decode('utf-8')
-                    break
-            datalength = struct.unpack('<b', self.ser.read())[0]
-            code = struct.unpack('<b', self.ser.read())
-            data = self.ser.read(datalength)
+            #while True:
+            #    header = self.ser.read().decode('utf-8')
+            #    if header == '$':
+            #        header = header+self.ser.read(2).decode('utf-8')
+            #        break
+            #datalength = struct.unpack('<b', self.ser.read())[0]
+            #code = struct.unpack('<b', self.ser.read())
+            #data = self.ser.read(datalength)
             self.ser.flushInput()
             self.ser.flushOutput()
-            
-            time.sleep(0.01)
 
-            self.getData(self.ATTITUDE)
+            #self.getData(self.ATTITUDE)
         except Exception as e:
             print("Drone communication error :::", e)
 

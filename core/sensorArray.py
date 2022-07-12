@@ -20,7 +20,7 @@ class vl53l0x:
             self.sensor.set_address(address)
             self.sensor.__enter__()
 #            self.sensor.measurement_timing_budget = 33000
-            self.sensor.measurement_timing_budget = 25000
+            self.sensor.measurement_timing_budget = 20000
             print("SUCCESS: Sensor id: " + str(id) + " is ONLINE!")
         except OSError as e:
             print("ERROR: Sensor id: " + str(id) + " is OFFLINE:", e)
@@ -65,22 +65,19 @@ class SensorArray:
         xshut = [
             DigitalInOut(board.D4),
             DigitalInOut(board.D14),
-            DigitalInOut(board.D15)
-        ]
-
-        """xshut = [
-            #Side sensors
-            DigitalInOut(board.D18),
-            DigitalInOut(board.D27),
-            DigitalInOut(board.D22),
-            DigitalInOut(board.D4),
-            DigitalInOut(board.D14),
             DigitalInOut(board.D15),
-            DigitalInOut(board.D23),
+            DigitalInOut(board.D20),
             DigitalInOut(board.D17),
-            #Bottom sensor
-            DigitalInOut(board.D24)
-        ]"""
+            DigitalInOut(board.D21),#5
+            DigitalInOut(board.D26),
+            DigitalInOut(board.D16),
+            DigitalInOut(board.D19),
+            DigitalInOut(board.D13),
+            DigitalInOut(board.D12),#10
+            DigitalInOut(board.D6),
+            DigitalInOut(board.D27),#Down
+
+        ]
 
         i2c = board.I2C()
 
