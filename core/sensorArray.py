@@ -2,6 +2,11 @@ from digitalio import DigitalInOut
 import board
 import time
 from adafruit_vl53l0x import VL53L0X
+from config import *
+
+config = Config()
+
+
 
 class vl53l0x:
     online = False
@@ -132,30 +137,3 @@ if __name__ == "__main__":
         sa.read()
         sa.print()
         #time.sleep(0.05)
-
-
-
-class PIDController:
-    def __init__(self, kp, ki, kd, min, max):
-        self.kp = kp
-        self.ki = ki
-        self.kd = kd
-        self.min = min
-        self.max = max
-        self.lastError = 0
-        self.integral = 0
-        self.lastTime = time.time()
-
-    def update(self, error):
-        now = time.time()
-        dt = now - self.lastTime
-        self.lastTime = now
-        self.integral += error * dt
-        derivative = (error - self.lastError) / dt
-        output = self.kp * error + self.ki * self.integral + self.kd * derivative
-        self.lastError = error
-        if output > self.max:
-            output = self.max
-        elif output < self.min:
-            output = self.min
-        return output

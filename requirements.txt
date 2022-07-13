@@ -1,1 +1,4 @@
 pyserial
+digitalio
+board
+adafruit_vl53l0x

@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
+from distutils.command.config import config
 import serial, time, struct
+from config import Config
+
+config = Config()
 
 class DroneLib:
     #Commands:
@@ -46,7 +50,7 @@ class DroneLib:
 
     #CONFIGURATION
 
-    BATERY_MIN = 6.5 #Minimal battery voltage
+    BATERY_MIN = config.BATERY_MIN
 
     DEFAULT_STICK_POSITION = [1000,1500,1500,1500,1000,1500,1000,2000]
 
@@ -91,13 +95,21 @@ class DroneLib:
                     time.sleep(0.1)
         except Exception as error:
             print ("\n\nError opening "+self.ser.port+" port.\n"+str(error)+"\n\n")
-
         
     
         print("Rebooting the board ... eta 3s")
         self.reboot()
         self.update(self.DEFAULT_STICK_POSITION)
-        print("Drone READY!")
+
+        checkAttempts = 50
+        for i in range(checkAttempts):
+            self.getData(self.ANALOG)
+            print("Battery: " + str(self.analog['vbat']) + "V ... " + str(int(i + 1 / checkAttempts * 100)) + "%", end="\r")
+        if self.analog['vbat'] < self.BATERY_MIN:
+            print("Battery: " + str(self.analog['vbat']) + "V ... REPLACE THE BATTERY NOW!")
+            raise Exception("Battery: too low, disconnecting")
+        else:
+            print("Battery: " + str(self.analog['vbat']) + "V ... Takeoff permitted!")
 
     def sendCMD(self, data_length, code, data, data_format):
         checksum = 0
@@ -348,9 +360,9 @@ class DroneLib:
                     return self.vtxConfig
             
             elif cmd == DroneLib.ANALOG:
-                print("!!! Recieved STATUS, data length:", datalength)
                 temp = struct.unpack('<'+'h' + 'b' + 'h' + 'h' + 'h',data)
-                self.analog['vbat']=temp[0]/10
+                if temp[0]/10 != 0:
+                    self.analog['vbat']=temp[0]/10
                 #self.analog['powerMeter']=temp[1] #Random byte appears here idk why
                 self.analog['powerMeter']=temp[2]
                 self.analog['rssi']=temp[3]

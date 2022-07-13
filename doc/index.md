@@ -43,8 +43,8 @@ This diagram shows communication in avoidWalls.py exmaple program.
 sequenceDiagram
 avoidWalls ->> DroneLib: Creates one instance on port /dev/ttyACM0
 DroneLib ->> Betaflight: Resets the board
-DroneLib ->> Betaflight: Performs the first update
-Betaflight -->> DroneLib: Telemetry data<br>Battery capacity
+DroneLib ->> Betaflight: Requests the first update
+Betaflight -->> DroneLib: Battery voltage<br>(being checked at DroneLib)
 
 avoidWalls ->> DroneLib: Arm
 DroneLib ->> Betaflight: Arm
