@@ -7,8 +7,11 @@ import time
 
 from core.dronelib import DroneLib
 from core.sensorArray import SensorArray
+from core.regulator import *
 
 sa = SensorArray()
+
+
 
 
 
@@ -23,6 +26,9 @@ if __name__ == "__main__":
     
     lasterror = 0
     lastThrottle = []
+
+    avfilterFrontBack = AverageFilter(size = 5)
+    avfilterRightLeft = AverageFilter(size = 5)
 
     now = time.time()
     timestamp = time.time()
@@ -40,11 +46,11 @@ if __name__ == "__main__":
       timestamp = printDiff(timestamp, time.time(), "2")
 
       if sa.sensors[12].value == -1:
-        throttle = 1600
+        throttle = 1400
 
       else:
         error = (2000 - sa.sensors[12].value)
-        throttle = 1700 + 0.07 * error + 1.8 * (error - lasterror)
+        throttle = 1500 + 0.04 * error + 0.5 * (error - lasterror)
         lasterror = error
         if throttle < 1400:
           throttle = 1400
@@ -52,8 +58,8 @@ if __name__ == "__main__":
 
       toAdd = time.time() - now
       throttleLimit = int(1000 + (1000 * toAdd))
-      if throttleLimit > 1900:
-        throttleLimit = 1900
+      if throttleLimit > 1800:
+        throttleLimit = 1800
       if throttle > throttleLimit:
         throttle = throttleLimit
       
