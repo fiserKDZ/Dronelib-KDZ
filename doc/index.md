@@ -10,29 +10,76 @@ All ready to launch exapmles are placed in the folder examples.
 ## avoidWalls.py
 This code takes off and avoids obstacles around the drone. Example usage of sensorArray library.
 
-...behaviour...
+The code begins with creating an DrobeLib object, which causes the drone to completely preare for it´s flight. Further details can be see in the communication diagram below, which shows, how exactly is the communication done. 
 
-..toto...
+In the main loop, there is 3 dimensional vector calculated, based on each sensor distances measured. Each dimension is being regulated separely based on its own pid controller. Final 3 dimensional vector is finally applied on the drone to make it "avoid its obstacles".
+
+This code is the most powerful with optical flow cammera bound to the betaflight board. If there is no optical flow camera present, the drone will drift away uncontrolled after avoiding an obstacle and possibly crash to another! Proportional values in XY regulators need to be lowered significantly if there is no positioning applied.
+
+### How to run this example code
+1) Start up the drone
+2) Connect via ssh to the drone, default login is ```pi``` and default password is ```raspberry```
+3) Locate the repository folder and run command ```python3 avoidWalls.py```
+
 
 ## resetBoard.py
-Example code, which resets the drone board. Resseting the board is called after each \_\_init\_\_  of the DroneLib class.
+Example code, which resets the drone board. Resseting the board is called after each \_\_init\_\_  of the DroneLib class. As simple as that:
+```
+#!/usr/bin/env python
+from core.dronelib import DroneLib
+from core.sensorArray import SensorArray
+sa = SensorArray()
+
+if __name__ == "__main__":
+	drone = DroneLib("/dev/ttyACM0")
+```
+
+### How to run this example code
+1) Start up the drone
+2) Connect via ssh to the drone, default login is ```pi``` and default password is ```raspberry```
+3) Locate the repository folder and run command ```python3 resetBoard.py```
 
 
 # How it works?
 
-
+This is how the import dependencies of dronelib modules are laid out:
 ```mermaid
 graph TD  
 classDef main fill:#f96;
 A(Your drone controller code):::main -- includes --> B(dronelib.dronelib)
 A -- can include --> C(dronelib.sensorArray)
+A -- can include --> D(dronelib.regulator)
+B -- includes --> E(config)
+C -- includes -->E
 ```
-- dronelib.dronelib
+### Packages description:
+- core.dronelib
 	> Contains class ```DroneLib```, which is responsible for all communication with the betaflight board.
 	> One instance of this class represents one drone connection, contructor requires one parameter - serial port of the drone, default is ```"/dev/ttyACM0"```
 
-- dronelib.sensorArray
-	> Before starting to sync files, you must link an account in the **Synchronize** sub-menu.
+To generate the documentation for this package, run:
+```
+python -m pydoc -w core\dronelib.py
+```
+
+- core.sensorArray
+	> Communicates with all of the sensors placed on the drone. All sensor positions and features can be changed in config file described further down. This package features asynchronous communication with VL53L0X sensors and at the beginning, changes their address properrly, so they can communicate on the I2C bus withut disturbing another sensors.
+
+To generate the documentation for this package, run:
+```
+python -m pydoc -w core\sensorArray.py
+```
+- core.regulator
+	> Includes improved PID regulator with simulator and other utilities capable of tuning up the regulator proportional, derivational and integrational constants. Simulator can be run separely and was used during the development to approprietly adjust the values of the drone regulators.
+
+To generate the documentation for this package, run:
+```
+python -m pydoc -w core\regulator.py
+```
+- config
+	> Here you can adjust the minimal voltage required for takeoff and tof sensor positions and other properties.
+	To edit the configuration, use your favourite editor, or run command
+	```nano config.py```
 
 
 ## Communication diagram
@@ -43,8 +90,8 @@ This diagram shows communication in avoidWalls.py exmaple program.
 sequenceDiagram
 avoidWalls ->> DroneLib: Creates one instance on port /dev/ttyACM0
 DroneLib ->> Betaflight: Resets the board
-DroneLib ->> Betaflight: Requests the first update
-Betaflight -->> DroneLib: Battery voltage<br>(being checked at DroneLib)
+DroneLib ->> Betaflight: Performs the first update
+Betaflight -->> DroneLib: Telemetry data<br>Battery capacity
 
 avoidWalls ->> DroneLib: Arm
 DroneLib ->> Betaflight: Arm
@@ -59,67 +106,47 @@ DroneLib ->> avoidWalls: Performs update based on incomming data
 ```
 # Drone specifications
 
+Each of our prototype drone has its own features and differs a little bit compared to its other versions. However, these specifications are similar across all our prototypes, as they are the neccesarity to make everything compatible.
 
 
+## Drone signal connection schema
+Which protocols are being used among all the components:
+```mermaid
+graph TD
+classDef rpi fill:#c7053d;
+classDef btf fill:#f5cb42;
+PI(Raspberry PI):::rpi -- commands over USB serial --> B(Betaflight):::btf
+PI -- MIPI --> C(Camera)
+B -- telemetry over USB serial --> PI
+B -- 3 pin --> M1(Motor)
+B -- 3 pin --> M2(Motor)
+B -- 3 pin --> M3(Motor)
+B -- 3 pin --> M4(Motor)
+PI(Raspberry PI) -- I2C bus --> TOF(VL53L0X sensor array)
+PI -- digital pin --> X1(XShuts of VL53L0Xs<br>...used to recignise<br>which sensor is which)
+X1 --> TOF
+```
+## Drone voltage distribution schema
+How different voltages are being distributed:
+```mermaid
+graph TD
+classDef rpi fill:#c7053d;
+classDef btf fill:#f5cb42;
+classDef bat fill:#4eaee6;
+BAT(1S / 2S Battery):::bat -- 7.4V --> B(Betaflight):::btf
+BAT -- 7.4V --> VR(Voltage regulator)
+VR -- 5V --> PI(Raspberry PI):::rpi
+VR -- 5V --> VL(VL53L0X sensors)
+```
 
-## Open a file
+## Used parts
+Informations about the parts we used and other interesting info can be found in the word document here: (link na Jindrův soubor)
 
-You can open a file from **Google Drive**, **Dropbox** or **GitHub** by opening the **Synchronize** sub-menu and clicking **Open from**. Once opened in the workspace, any modification in the file will be automatically synced.
-
-## Save a file
-
-You can save any file of the workspace to **Google Drive**, **Dropbox** or **GitHub** by opening the **Synchronize** sub-menu and clicking **Save on**. Even if a file in the workspace is already synced, you can save it to another location. StackEdit can sync one file with multiple locations and accounts.
-
-## Synchronize a file
-
-Once your file is linked to a synchronized location, StackEdit will periodically synchronize it by downloading/uploading any modification. A merge will be performed if necessary and conflicts will be resolved.
-
-If you just have modified your file and you want to force syncing, click the **Synchronize now** button in the navigation bar.
-
-> **Note:** The **Synchronize now** button is disabled if you have no file to synchronize.
-
-## Manage file synchronization
-
-Since one file can be synced with multiple locations, you can list and manage synchronized locations by clicking **File synchronization** in the **Synchronize** sub-menu. This allows you to list and remove synchronized locations that are linked to your file.
-
-
-# Publication
-
-Publishing in StackEdit makes it simple for you to publish online your files. Once you're happy with a file, you can publish it to different hosting platforms like **Blogger**, **Dropbox**, **Gist**, **GitHub**, **Google Drive**, **WordPress** and **Zendesk**. With [Handlebars templates](http://handlebarsjs.com/), you have full control over what you export.
-
-> Before starting to publish, you must link an account in the **Publish** sub-menu.
-
-## Publish a File
-
-You can publish your file by opening the **Publish** sub-menu and by clicking **Publish to**. For some locations, you can choose between the following formats:
-
-- Markdown: publish the Markdown text on a website that can interpret it (**GitHub** for instance),
-- HTML: publish the file converted to HTML via a Handlebars template (on a blog for example).
-
-## Update a publication
-
-After publishing, StackEdit keeps your file linked to that publication which makes it easy for you to re-publish it. Once you have modified your file and you want to update your publication, click on the **Publish now** button in the navigation bar.
-
-> **Note:** The **Publish now** button is disabled if your file has not been published yet.
-
-## Manage file publication
-
-Since one file can be published to multiple locations, you can list and manage publish locations by clicking **File publication** in the **Publish** sub-menu. This allows you to list and remove publication locations that are linked to your file.
-
-
-# Markdown extensions
-
-StackEdit extends the standard Markdown syntax by adding extra **Markdown extensions**, providing you with some nice features.
-
-> **ProTip:** You can disable any **Markdown extension** in the **File properties** dialog.
-
-
-## SmartyPants
-
-SmartyPants converts ASCII punctuation characters into "smart" typographic punctuation HTML entities. For example:
-
-|                |ASCII                          |HTML                         |
-|----------------|-------------------------------|-----------------------------|
-|Single backticks|`'Isn't this fun?'`            |'Isn't this fun?'            |
-|Quotes          |`"Isn't this fun?"`            |"Isn't this fun?"            |
-|Dashes          |`-- is en-dash, --- is em-dash`|-- is en-dash, --- is em-dash|
+# Code documentation
+The code is commented regulary and to generate the documentation, simply execute:
+```
+python -m pydoc -w core\dronelib.py
+python -m pydoc -w core\sensorArray.py
+python -m pydoc -w core\regulator.py
+```
+You will find all documentation files in the root folder.
