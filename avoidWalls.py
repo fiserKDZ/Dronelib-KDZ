@@ -5,8 +5,8 @@ from os import times
 import time
 
 
-from dronelib import DroneLib
-from sensorArray import SensorArray
+from core.dronelib import DroneLib
+from core.sensorArray import SensorArray
 
 sa = SensorArray()
 
