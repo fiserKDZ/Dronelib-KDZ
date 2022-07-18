@@ -14,8 +14,10 @@ class vl53l0x:
     sensor = None
     id = -1
     value = -1
+    config = None
 
-    def __init__(self, powerPin, address, id, i2c):
+    def __init__(self, powerPin, address, id, i2c, config = None):
+        self.config = config
         self.powerPin = powerPin
         self.powerPin.value = True
         self.id = id
