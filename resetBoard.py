@@ -3,7 +3,7 @@
 from core.dronelib import DroneLib
 from core.sensorArray import SensorArray
 
-sa = SensorArray()
+#sa = SensorArray()
 
 
 

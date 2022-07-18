@@ -27,9 +27,6 @@ if __name__ == "__main__":
     lasterror = 0
     lastThrottle = []
 
-    avfilterFrontBack = AverageFilter(size = 5)
-    avfilterRightLeft = AverageFilter(size = 5)
-
     now = time.time()
     timestamp = time.time()
     def printDiff(timestamp, timenow, message):

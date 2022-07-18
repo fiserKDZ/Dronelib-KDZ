@@ -27,7 +27,7 @@ class vl53l0x:
 #            self.sensor.measurement_timing_budget = 33000
             self.sensor.measurement_timing_budget = 20000
             print("SUCCESS: Sensor id: " + str(id) + " is ONLINE!")
-        except OSError as e:
+        except ValueError as e:
             print("ERROR: Sensor id: " + str(id) + " is OFFLINE:", e)
             powerPin.value = False
             self.online = False
