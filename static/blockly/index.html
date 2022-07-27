@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google" value="notranslate">
+  <title>DroneProg v1</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="appengine/storage.js"></script>
+  <script src="blockly_compressed.js"></script>
+  <script src="blocks_compressed.js"></script>
+  <script src="python_compressed.js"></script>
+  <script src="custom/blocks.js" ></script>
+  <script src="code.js"></script>
+  <script src="FileSaver.min.js"></script>
+
+  <style>
+    /* The Modal (background) */
+.ebcf_modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 10000; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.ebcf_modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    z-index: 11000;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 90%;
+    border-radius: 10px;
+}
+
+/* The Close Button */
+.ebcf_close {
+    color: #aaaaaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.ebcf_close:hover,
+.ebcf_close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+.row {
+  display: flex;
+}
+
+.column {
+  flex: 33.33%;
+  padding: 5px;
+  user-select: none;
+}
+
+.column img{
+  filter: brightness(100%);
+  border-radius: 10px;
+  transition: filter 0.2s linear;
+  cursor: pointer;
+}
+.column img:hover{
+  filter: brightness(70%);
+}
+
+</style>
+</head>
+<body>
+  <table width="100%" height="100%">
+	<!--
+    <tr>
+      <td class="farSide">
+        <select id="languageMenu"></select>
+      </td>
+    </tr>-->
+    <tr>
+      <td colspan=2>
+        <table width="100%">
+          <tr id="tabRow" height="1em">
+            <td id="tab_blocks" class="tabon">...</td>
+            <td class="tabmin tab_collapse">&nbsp;</td>
+            <td id="tab_python" class="taboff tab_collapse">Python</td>
+            <td class="tabmin">&nbsp;</td>
+            <td id="tab_code" class="taboff">
+              <select id="code_menu"></select>
+            </td>
+            <td class="tabmax">
+
+              <button id="samplesButton">Ukázky</button>
+              <!--Loader for xml files-->
+              <button id="loadButton">Načíst</button>
+              <input type="file" id='file' accept=".xml"  hidden>
+              <button onclick="myFile()" hidden></button>
+              <!--Done-->
+              <button id="saveButton">Uložit</button>
+              
+              <select id="languageMenu" style="margin-bottom: 7px; margin-top: 7px;" hidden></select>
+
+              <button id="trashButton" class="notext" title="...">
+                <img src='media/1x1.gif' class="trash icon21">
+              </button>
+              <button id="linkButton" class="notext" title="...">
+                <img src='media/1x1.gif' class="link icon21">
+              </button>
+              <button id="runButton" class="notext primary" title="...">
+                <img src='media/1x1.gif' class="run icon21">
+              </button>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td height="99%" colspan=2 id="content_area">
+      </td>
+    </tr>
+  </table>
+  <div id="content_blocks" class="content"></div>
+  <pre id="content_javascript" class="content prettyprint lang-js"></pre>
+  <pre id="content_python" class="content prettyprint lang-py"></pre>
+  <pre id="content_php" class="content prettyprint lang-php"></pre>
+  <pre id="content_lua" class="content prettyprint lang-lua"></pre>
+  <pre id="content_dart" class="content prettyprint lang-dart"></pre>
+  <textarea id="content_xml" class="content" wrap="off"></textarea>
+
+  <div id="mySizeChartModal" class="ebcf_modal">
+
+    <div class="ebcf_modal-content">
+      <span class="ebcf_close">&times;</span>
+      <h3>Ukázkové programy:</h3>
+      <div class="row">
+        <div class="column" onclick="loadSample(0)">
+          Pošli mi drona
+          <img src="res/handland.jfif" alt="SendMeDrone" style="width:100%">
+        </div>
+        <div class="column" onclick="loadSample(1)">
+          Udělej salto
+          <img src="res/flip.jpg" alt="Salto" style="width:100%">
+        </div>
+        <div class="column" onclick="loadSample(2)">
+          Sledování člověka
+          <img src="res/follow.jpg" alt="Follow" style="width:100%">
+        </div>
+      </div>
+    </div>
+  
+  </div>
+
+  <script>
+    // Get the modal
+var ebModal = document.getElementById('mySizeChartModal');
+var ebSpan = document.getElementsByClassName("ebcf_close")[0];
+
+// When the user clicks on <span> (x), close the modal
+ebSpan.onclick = function() {
+    ebModal.style.display = "none";
+}
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+    if (event.target == ebModal) {
+        ebModal.style.display = "none";
+    }
+}
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+<xml xmlns="https://developers.google.com/blockly/xml" id="toolbox" style="display: none">
+  <category name="Logika" colour="#5b80a5">
+    <block type="controls_if"></block>
+    <block type="logic_compare">
+      <field name="OP">EQ</field>
+    </block>
+    <block type="logic_operation">
+      <field name="OP">AND</field>
+    </block>
+    <block type="logic_negate"></block>
+    <block type="logic_boolean">
+      <field name="BOOL">TRUE</field>
+    </block>
+    <block type="logic_null"></block>
+    <block type="logic_ternary"></block>
+  </category>
+  <category name="Smyčky" colour="#5ba55b">
+    <block type="controls_repeat_ext">
+      <value name="TIMES">
+        <shadow type="math_number">
+          <field name="NUM">10</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="controls_whileUntil">
+      <field name="MODE">WHILE</field>
+    </block>
+    <block type="controls_for">
+      <field name="VAR" id="*p~q?u36Om6ULpP1NHR/">i</field>
+      <value name="FROM">
+        <shadow type="math_number">
+          <field name="NUM">1</field>
+        </shadow>
+      </value>
+      <value name="TO">
+        <shadow type="math_number">
+          <field name="NUM">10</field>
+        </shadow>
+      </value>
+      <value name="BY">
+        <shadow type="math_number">
+          <field name="NUM">1</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="controls_forEach">
+      <field name="VAR" id="Xlvj1`hoqs;0bTJNX_Rh">j</field>
+    </block>
+    <block type="controls_flow_statements">
+      <field name="FLOW">BREAK</field>
+    </block>
+  </category>
+  <category name="Matematika" colour="#5b67a5">
+    <block type="math_number">
+      <field name="NUM">0</field>
+    </block>
+    <block type="math_arithmetic">
+      <field name="OP">ADD</field>
+      <value name="A">
+        <shadow type="math_number">
+          <field name="NUM">1</field>
+        </shadow>
+      </value>
+      <value name="B">
+        <shadow type="math_number">
+          <field name="NUM">1</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="math_single">
+      <field name="OP">ROOT</field>
+      <value name="NUM">
+        <shadow type="math_number">
+          <field name="NUM">9</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="math_trig">
+      <field name="OP">SIN</field>
+      <value name="NUM">
+        <shadow type="math_number">
+          <field name="NUM">45</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="math_constant">
+      <field name="CONSTANT">PI</field>
+    </block>
+    <block type="math_number_property">
+      <mutation divisor_input="false"></mutation>
+      <field name="PROPERTY">EVEN</field>
+      <value name="NUMBER_TO_CHECK">
+        <shadow type="math_number">
+          <field name="NUM">0</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="math_round">
+      <field name="OP">ROUND</field>
+      <value name="NUM">
+        <shadow type="math_number">
+          <field name="NUM">3.1</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="math_on_list">
+      <mutation op="SUM"></mutation>
+      <field name="OP">SUM</field>
+    </block>
+    <block type="math_modulo">
+      <value name="DIVIDEND">
+        <shadow type="math_number">
+          <field name="NUM">64</field>
+        </shadow>
+      </value>
+      <value name="DIVISOR">
+        <shadow type="math_number">
+          <field name="NUM">10</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="math_constrain">
+      <value name="VALUE">
+        <shadow type="math_number">
+          <field name="NUM">50</field>
+        </shadow>
+      </value>
+      <value name="LOW">
+        <shadow type="math_number">
+          <field name="NUM">1</field>
+        </shadow>
+      </value>
+      <value name="HIGH">
+        <shadow type="math_number">
+          <field name="NUM">100</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="math_random_int">
+      <value name="FROM">
+        <shadow type="math_number">
+          <field name="NUM">1</field>
+        </shadow>
+      </value>
+      <value name="TO">
+        <shadow type="math_number">
+          <field name="NUM">100</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="math_random_float"></block>
+  </category>
+  <category name="Text" colour="#5ba58c">
+    <block type="text">
+      <field name="TEXT"></field>
+    </block>
+    <block type="text_join">
+      <mutation items="2"></mutation>
+    </block>
+    <block type="text_append">
+      <field name="VAR" id="h%#TID/D+d%$vd4-Wwg2">item</field>
+      <value name="TEXT">
+        <shadow type="text">
+          <field name="TEXT"></field>
+        </shadow>
+      </value>
+    </block>
+    <block type="text_length">
+      <value name="VALUE">
+        <shadow type="text">
+          <field name="TEXT">abc</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="text_isEmpty">
+      <value name="VALUE">
+        <shadow type="text">
+          <field name="TEXT"></field>
+        </shadow>
+      </value>
+    </block>
+    <block type="text_indexOf">
+      <field name="END">FIRST</field>
+      <value name="VALUE">
+        <block type="variables_get">
+          <field name="VAR" id="5zyC_xkwmh6ccM3baEc(">text</field>
+        </block>
+      </value>
+      <value name="FIND">
+        <shadow type="text">
+          <field name="TEXT">abc</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="text_charAt">
+      <mutation at="true"></mutation>
+      <field name="WHERE">FROM_START</field>
+      <value name="VALUE">
+        <block type="variables_get">
+          <field name="VAR" id="5zyC_xkwmh6ccM3baEc(">text</field>
+        </block>
+      </value>
+    </block>
+    <block type="text_getSubstring">
+      <mutation at1="true" at2="true"></mutation>
+      <field name="WHERE1">FROM_START</field>
+      <field name="WHERE2">FROM_START</field>
+      <value name="STRING">
+        <block type="variables_get">
+          <field name="VAR" id="5zyC_xkwmh6ccM3baEc(">text</field>
+        </block>
+      </value>
+    </block>
+    <block type="text_changeCase">
+      <field name="CASE">UPPERCASE</field>
+      <value name="TEXT">
+        <shadow type="text">
+          <field name="TEXT">abc</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="text_trim">
+      <field name="MODE">BOTH</field>
+      <value name="TEXT">
+        <shadow type="text">
+          <field name="TEXT">abc</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="text_print">
+      <value name="TEXT">
+        <shadow type="text">
+          <field name="TEXT">abc</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="text_prompt_ext">
+      <mutation type="TEXT"></mutation>
+      <field name="TYPE">TEXT</field>
+      <value name="TEXT">
+        <shadow type="text">
+          <field name="TEXT">abc</field>
+        </shadow>
+      </value>
+    </block>
+  </category>
+  <category name="Seznamy" colour="#745ba5">
+    <block type="lists_create_with">
+      <mutation items="0"></mutation>
+    </block>
+    <block type="lists_create_with">
+      <mutation items="3"></mutation>
+    </block>
+    <block type="lists_repeat">
+      <value name="NUM">
+        <shadow type="math_number">
+          <field name="NUM">5</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="lists_length"></block>
+    <block type="lists_isEmpty"></block>
+    <block type="lists_indexOf">
+      <field name="END">FIRST</field>
+      <value name="VALUE">
+        <block type="variables_get">
+          <field name="VAR" id="e/CBz2*;UgKI~j$ta@h)">list</field>
+        </block>
+      </value>
+    </block>
+    <block type="lists_getIndex">
+      <mutation statement="false" at="true"></mutation>
+      <field name="MODE">GET</field>
+      <field name="WHERE">FROM_START</field>
+      <value name="VALUE">
+        <block type="variables_get">
+          <field name="VAR" id="e/CBz2*;UgKI~j$ta@h)">list</field>
+        </block>
+      </value>
+    </block>
+    <block type="lists_setIndex">
+      <mutation at="true"></mutation>
+      <field name="MODE">SET</field>
+      <field name="WHERE">FROM_START</field>
+      <value name="LIST">
+        <block type="variables_get">
+          <field name="VAR" id="e/CBz2*;UgKI~j$ta@h)">list</field>
+        </block>
+      </value>
+    </block>
+    <block type="lists_getSublist">
+      <mutation at1="true" at2="true"></mutation>
+      <field name="WHERE1">FROM_START</field>
+      <field name="WHERE2">FROM_START</field>
+      <value name="LIST">
+        <block type="variables_get">
+          <field name="VAR" id="e/CBz2*;UgKI~j$ta@h)">list</field>
+        </block>
+      </value>
+    </block>
+    <block type="lists_split">
+      <mutation mode="SPLIT"></mutation>
+      <field name="MODE">SPLIT</field>
+      <value name="DELIM">
+        <shadow type="text">
+          <field name="TEXT">,</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="lists_sort">
+      <field name="TYPE">NUMERIC</field>
+      <field name="DIRECTION">1</field>
+    </block>
+  </category>
+  <sep></sep>
+  <category name="Proměnné" colour="#a55b80" custom="VARIABLE"></category>
+  <category name="Funkce" colour="#995ba5" custom="PROCEDURE"></category>
+  <sep></sep>
+  <category name="Dron" colour="#5b67a5">
+    <block type="vzletni"></block>
+    <block type="pristan"></block>
+    <block type="move">
+      <field name="dir">2</field>
+      <value name="range">
+        <block type="math_number">
+          <field name="NUM">50</field>
+        </block>
+      </value>
+    </block>
+    <block type="rotate">
+      <field name="dir">1</field>
+      <value name="angle">
+        <block type="uhel">
+          <field name="uhel">90</field>
+        </block>
+      </value>
+    </block>
+    <block type="rotate">
+      <field name="dir">-1</field>
+      <value name="angle">
+        <block type="uhel">
+          <field name="uhel">90</field>
+        </block>
+      </value>
+    </block>
+    <block type="delay">
+      <value name="time">
+        <block type="math_number">
+          <field name="NUM">5</field>
+        </block>
+      </value>
+    </block>
+    <block type="set_speed_jednoduse">
+      <field name="speed">60</field>
+    </block>
+    <block type="salto">
+      <field name="dir">0</field>
+    </block>
+    <block type="set_speed">
+      <value name="speed">
+        <block type="math_number">
+          <field name="NUM">50</field>
+        </block>
+      </value>
+    </block>
+    <block type="drone_parameters">
+      <field name="param">0</field>
+    </block>
+    <block type="letet_manualne">
+      <value name="p1">
+        <block type="math_number">
+          <field name="NUM">0</field>
+        </block>
+      </value>
+      <value name="p2">
+        <block type="math_number">
+          <field name="NUM">0</field>
+        </block>
+      </value>
+      <value name="p3">
+        <block type="math_number">
+          <field name="NUM">0</field>
+        </block>
+      </value>
+      <value name="p4">
+        <block type="math_number">
+          <field name="NUM">0</field>
+        </block>
+      </value>
+    </block>
+  </category>
+  <category name="Vstup/výstup" colour="#9fa55b">
+    <block type="stisknuta_klavesa_jednoduse">
+      <field name="key">32</field>
+    </block>
+    <block type="stisknuta_klavesa">
+      <field name="key">0</field>
+    </block>
+    <block type="log">
+      <value name="param">
+        <block type="text">
+          <field name="TEXT">Ahoj světe!</field>
+        </block>
+      </value>
+    </block>
+    <block type="playsound">
+      <field name="sound">0</field>
+    </block>
+    <block type="exit_program">
+      <value name="time">
+        <block type="text">
+          <field name="TEXT">Vše v pořádku</field>
+        </block>
+      </value>
+    </block>
+    <block type="exit_program">
+      <value name="time">
+        <block type="text">
+          <field name="TEXT">Chyba</field>
+        </block>
+      </value>
+    </block>
+    <block type="programrunningflag"></block>
+  </category>
+  <category name="Kamera" colour="#a5745b">
+    <block type="variables_set">
+      <field name="VAR" id="BN#/ReoZT/CA)Li90UJx">obrazek</field>
+      <value name="VALUE">
+        <block type="take_img"></block>
+      </value>
+    </block>
+    <block type="variables_set">
+      <field name="VAR" id="_8C*hNOhRzI7EThg!Oh~">kamera</field>
+      <value name="VALUE">
+        <block type="create_webcam">
+          <value name="NAME">
+            <block type="math_number">
+              <field name="NUM">0</field>
+            </block>
+          </value>
+        </block>
+      </value>
+    </block>
+    <block type="variables_set">
+      <field name="VAR" id="BN#/ReoZT/CA)Li90UJx">obrazek</field>
+      <value name="VALUE">
+        <block type="take_img_webcam">
+          <value name="NAME">
+            <block type="variables_get">
+              <field name="VAR" id="_8C*hNOhRzI7EThg!Oh~">kamera</field>
+            </block>
+          </value>
+        </block>
+      </value>
+    </block>
+    <block type="cv2_imshow">
+      <value name="inputImg">
+        <block type="variables_get">
+          <field name="VAR" id="BN#/ReoZT/CA)Li90UJx">obrazek</field>
+        </block>
+      </value>
+      <value name="headline">
+        <block type="text">
+          <field name="TEXT">obrázek</field>
+        </block>
+      </value>
+    </block>
+    <block type="save_img">
+      <value name="image">
+        <block type="variables_get">
+          <field name="VAR" id="BN#/ReoZT/CA)Li90UJx">obrazek</field>
+        </block>
+      </value>
+      <value name="file">
+        <block type="text">
+          <field name="TEXT">fotka</field>
+        </block>
+      </value>
+    </block>
+    <block type="objects_img">
+      <field name="obj">0</field>
+      <value name="img">
+        <block type="variables_get">
+          <field name="VAR" id="BN#/ReoZT/CA)Li90UJx">obrazek</field>
+        </block>
+      </value>
+    </block>
+    <block type="object_distance"></block>
+    <block type="object_angle"></block>
+    <block type="gesture_tpose"></block>
+    <block type="hands_detect">
+      <value name="NAME">
+        <block type="variables_get">
+          <field name="VAR" id="BN#/ReoZT/CA)Li90UJx">obrazek</field>
+        </block>
+      </value>
+    </block>
+    <block type="gesture_hands">
+      <field name="handchoice">2</field>
+    </block>
+    <block type="hands_distance">
+      <field name="handchoice">2</field>
+    </block>
+    <block type="hands_x">
+      <field name="handchoice">2</field>
+    </block>
+    <block type="hands_y">
+      <field name="handchoice">2</field>
+    </block>
+    <block type="gesture_hands_detect_gesture">
+      <field name="gesture">0</field>
+    </block>
+    <block type="gesture_hands_count"></block>
+    <block type="cv2_destroyallwindows"></block>
+  </category>
+</xml>
+
+
+
+
+
+
+</body>
+</html>

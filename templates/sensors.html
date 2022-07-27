@@ -1,0 +1,140 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensor preview</title>
+    <link rel="stylesheet" href="static/sensorsStyle.css">
+    <link rel="stylesheet" href="static/indexStyle.css">
+</head>
+<body>
+    <!-- Create centered canvas full screen -->
+
+    <div class="split left">
+        <div class="telemetryDiv">
+            <h3>Stav: <b id="telemetryState">?</b></h3>
+            <hr></hr>
+            <h3>Telemetrie</h3>
+            <p>Výška: <b id="telemetryHeight">?</b>cm</p>
+            <p>Baterie: <b id="telemetryBattery">?</b>V</p>
+            <p>Doba letu: <b id="telemetryTime">?</b>s</p>
+            <p>Rychlost: <b id="telemetrySpeed">?</b>m/s</p>
+            <hr></hr>
+            <h3>Výstup programu</h3>
+            <p>Placeholder 1</p>
+            <p>Placeholder 2</p>
+        </div>
+    </div>
+    <div class="split right">
+        <canvas id="canvas"></canvas>
+    </div>
+
+
+    <script>
+
+        //Configuration
+        const refreshTimeout = 1000 //ms
+
+
+        var sensorArray = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        var telemetry = {"height": 0, "battery": 0, "time": 0, "speed": 0, "state": "Offline"};
+
+
+
+        // Create canvas
+        var canvas = document.getElementById("canvas");
+        var ctx = canvas.getContext("2d");
+        
+        //Render the canvas
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            //Change draw color to red
+            ctx.strokeStyle = "gray";
+            ctx.fillStyle = 'orange';
+            ctx.beginPath();
+
+            //Render numbers from datta array around the circle
+            var circleRadius = canvas.width/2.1;
+            if (circleRadius > canvas.height/2.1) {
+                circleRadius = canvas.height/2.1;
+            }
+            var fontSize = circleRadius/10;
+            var dataSize = circleRadius/1200
+
+            ctx.arc(canvas.width/2, canvas.height/2, circleRadius, 0, 2 * Math.PI);
+            ctx.stroke();
+            ctx.strokeStyle = "black";
+
+            for (var i = 0; i < sensorArray.length; i++) {
+                ctx.moveTo(canvas.width/2, canvas.height/2);
+                ctx.beginPath();
+                var angle = -1 * (i / sensorArray.length) * 2 * Math.PI - Math.PI/2;
+                var x = canvas.width/2 + 0.5 * circleRadius * Math.cos(angle) - fontSize/2;
+                var y = canvas.height/2 + 0.5 * circleRadius * Math.sin(angle) + fontSize/2;
+                angle -= Math.PI / sensorArray.length;
+
+                //Draw appropriate line from the center with the same length as the data array
+                ctx.moveTo(canvas.width/2, canvas.height/2);
+                x = canvas.width/2 + dataSize * sensorArray[i] * Math.cos(angle);
+                y = canvas.height/2 + dataSize * sensorArray[i] * Math.sin(angle);
+                ctx.lineTo(x, y);
+                ctx.arc(canvas.width/2, canvas.height/2, dataSize * sensorArray[i], angle, angle + Math.PI / sensorArray.length * 2);
+                ctx.lineTo(canvas.width/2, canvas.height/2);
+                ctx.fill();
+                ctx.stroke();
+            }
+
+            
+            ctx.font = fontSize + "px Arial";
+            ctx.strokeStyle = "black";
+            ctx.fillStyle = 'black';
+            for (var i = 0; i < sensorArray.length; i++) {
+                var angle = -1 * (i / sensorArray.length) * 2 * Math.PI - Math.PI/2;
+                var x = canvas.width/2 + 0.5 * circleRadius * Math.cos(angle) - fontSize/2;
+                var y = canvas.height/2 + 0.5 * circleRadius * Math.sin(angle) + fontSize/2;
+                ctx.fillText(sensorArray[i], x, y);
+            }
+
+            document.getElementById("telemetryHeight").innerHTML = telemetry.height;
+            document.getElementById("telemetryBattery").innerHTML = telemetry.battery;
+            document.getElementById("telemetryTime").innerHTML = telemetry.time;
+            document.getElementById("telemetrySpeed").innerHTML = telemetry.speed;
+            document.getElementById("telemetryState").innerHTML = telemetry.state;
+        }
+
+        function sensorDataUpdate(){
+            var xhr = new XMLHttpRequest();
+                xhr.open("GET", "./updateSensors", true);
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState == 4 && xhr.status == 200) {
+                        data = JSON.parse(xhr.responseText);
+                        console.log(data);
+                        try{
+                            telemetry = data.telemetry
+                            sensorArray = data.sensorArray;
+                        } catch {
+                            //TODO catch TypeError
+                        }
+                        render();
+                    }
+                };
+                xhr.send();
+        }
+        
+        window.onload = function() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            //Fetch data every 100ms from ./update endpoint
+            setInterval(function() {
+                sensorDataUpdate();
+            }, refreshTimeout);
+        }
+
+        window.onresize = function() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            render();
+        }
+
+    </script>
+</body>
+</html>

@@ -66,8 +66,7 @@ class vl53l0x:
 class SensorArray:
     sensors = []
 
-    def __init__(self) -> None:
-
+    def __init__(self):
         
         xshut = [
             DigitalInOut(board.D4),
