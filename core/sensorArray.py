@@ -68,25 +68,28 @@ class SensorArray:
 
     def __init__(self):
         
-        xshut = [
+        offline = [
+            DigitalInOut(board.D7),
+            DigitalInOut(board.D21),
+            DigitalInOut(board.D8),
+            DigitalInOut(board.D12),
             DigitalInOut(board.D4),
+            DigitalInOut(board.D16),
+            DigitalInOut(board.D25),#5
+            DigitalInOut(board.D24),
             DigitalInOut(board.D14),
             DigitalInOut(board.D15),
-            DigitalInOut(board.D20),
-            DigitalInOut(board.D17),
-            DigitalInOut(board.D21),#5
-            DigitalInOut(board.D26),
-            DigitalInOut(board.D16),
-            DigitalInOut(board.D19),
-            DigitalInOut(board.D13),
-            DigitalInOut(board.D12),#10
-            DigitalInOut(board.D6),
-            DigitalInOut(board.D27),#Down
+            DigitalInOut(board.D18),#10
+        ]
+
+        xshut = [DigitalInOut(board.D20),#DOWN
 
         ]
 
         i2c = board.I2C()
 
+        for power_pin in offline:
+            power_pin.switch_to_output(value=False)
         for power_pin in xshut:
             # make sure these pins are a digital output, not a digital input
             power_pin.switch_to_output(value=False)
@@ -115,6 +118,9 @@ class SensorArray:
             print("{0: >8} ".format(round(sensor.value)), end="")
         
         print ("", end="\r")
+
+    def bottomSensor(self):
+        return self.sensors[-1]
 
         
 # there is a helpful list of pre-designated I2C addresses for various I2C devices at

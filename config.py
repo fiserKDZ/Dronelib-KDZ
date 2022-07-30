@@ -23,7 +23,7 @@ class SensorConfig:
 
 
 class Config:
-    BATERY_MIN = 7.2
+    BATERY_MIN = 3.3
 
     sensors = [
         SensorConfig(board.D4,  True, angle = 0),   # 0

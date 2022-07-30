@@ -162,7 +162,8 @@ class DroneLib:
                         commands.append(a)
             return commands
             
-        commands = parseCommandsFromFile("core/arm.seq")
+        commands = parseCommandsFromFile("core/newArm.seq")
+        
         begining = int(commands[0][0]) - 5
         counter = 0
         
