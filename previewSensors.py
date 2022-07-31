@@ -52,7 +52,7 @@ def sensors ():
 @app.route('/updateSensors')
 def update():
     sensorArray = readSensorArray(mockData=mockData)
-    telemetry = {"height": 0, "battery": 0, "time": 0, "speed": 0, "state": "Online"}
+    telemetry = {"height": sa.bottomSensor().value/10, "battery": 0, "time": 0, "speed": 0, "state": "Online"}
     toSend = {"telemetry": telemetry, "sensorArray": sensorArray}
     return jsonify(toSend)
 

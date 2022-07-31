@@ -3,6 +3,7 @@ import curses
 from collections import deque
 from itertools import cycle
 from threading import Thread
+from turtle import forward
 
 # from threading import Timer
 
@@ -24,7 +25,16 @@ heightRegulator = PidRegulator(kp=1, ki = 0.002, kd = 3, mi = 0.95) #Underhover
 heightRegulator = PidRegulator(kp=2.5, ki = 0.05, kd = 20, mi = 0.95)
 HEIGHT_AUTOPILOT_HOVER_THROTTLE = 1530
 HEIGHT_AUTOPILOT_GAIN = 150
-HEIGHT_AUTOPILOT_VOLTAGE_COMPENSATION = 100
+HEIGHT_AUTOPILOT_VOLTAGE_COMPENSATION = 50
+
+
+AUTONOMOUS = True
+FORWARD_TARGET = 580
+FORWARD_AUTOPILOT_GAIN = 100
+RIGHT_TARGET = 580
+forwardRegulator = PidRegulator(kp=1, ki = 0, kd = 12, mi = 0.95)
+rightRegulator = PidRegulator(kp=1, ki = 0, kd = 12, mi = 0.95)
+
 
 
 
@@ -300,13 +310,26 @@ class CogniflyController():
 
 
                     if HEIGHT_AUTOPILOT and self.armed:
-                        errorVal = 0.001 * (HEIGHT_TARGET - sa.bottomSensor().value)
+                        errorVal = 0.001 * (HEIGHT_TARGET - sa.bottomSensor().pvalue())
                         throttle = heightRegulator.regulate(errorVal) * HEIGHT_AUTOPILOT_GAIN
                         voltageHelper = 4 - self.voltage
                         if voltageHelper < 0: voltageHelper = 0
                         if voltageHelper > 1: voltageHelper = 1
                         CMDS['throttle'] = HEIGHT_AUTOPILOT_HOVER_THROTTLE + throttle + voltageHelper * HEIGHT_AUTOPILOT_VOLTAGE_COMPENSATION
 
+                    forward, right = (0, 0)
+                    if AUTONOMOUS:
+                        if sa.bottomSensor().pvalue() > 150:
+                            errorVal = -0.001 * (FORWARD_TARGET - sa.sensors[0].pvalue())
+                            forward = forwardRegulator.regulate(errorVal) * FORWARD_AUTOPILOT_GAIN
+                            CMDS['pitch'] = 1500 + forward
+                            
+                            errorVal = -0.001 * (RIGHT_TARGET - sa.sensors[8].pvalue())
+                            right = rightRegulator.regulate(errorVal) * FORWARD_AUTOPILOT_GAIN
+                            CMDS['roll'] = 1500 + right
+                        else:
+                            CMDS['pitch'] = 1500
+                            CMDS['roll'] = 1500
 
 
 
@@ -490,6 +513,10 @@ class CogniflyController():
 
                             screen.addstr(12, 0, "BottomSensor: {}".format(sa.bottomSensor().value))
                             screen.clrtoeol()
+                            screen.addstr(13, 0, "FrontSensor: {}".format(sa.sensors[0].value))
+                            screen.clrtoeol()
+                            screen.addstr(14, 0, "RightSensor: {}".format(sa.sensors[8].value))
+                            screen.clrtoeol()
 
                             screen.addstr(3, 0, cursor_msg)
                             screen.clrtoeol()
@@ -544,4 +571,3 @@ if __name__ == "__main__":
     parser.add_argument('--obslooptime', type=float, default=None, help='Duration between sending UDP observations.')
     args = parser.parse_args()
     main(args)
-    

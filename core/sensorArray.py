@@ -19,6 +19,10 @@ class vl53l0x:
     def __init__(self, powerPin, address, id, i2c, config = None):
         self.config = config
         self.powerPin = powerPin
+        self.value = -1
+        if not self.config.enabled:
+            self.online = False
+            return
         self.powerPin.value = True
         self.id = id
         try:   
@@ -33,6 +37,7 @@ class vl53l0x:
             print("ERROR: Sensor id: " + str(id) + " is OFFLINE:", e)
             powerPin.value = False
             self.online = False
+        time.sleep(0.1)
 
     def read(self):
         if self.online:
@@ -54,13 +59,14 @@ class vl53l0x:
             return -1
     
     def pvalue(self):
-        offset = 1000
-        if self.online and self.value != -1:
-            if self.value > offset:
-                return 0
-            return offset - self.value
-        else:
-            return 0
+        offset = 1400
+        if not self.online:
+            return -1
+        if self.value == -1:
+            return offset
+        if self.value > offset:
+            return offset
+        return self.value
 
 
 class SensorArray:
@@ -88,7 +94,6 @@ class SensorArray:
             self.sensors.append(vl53l0x(sensor.digitalPin, i + 0x30, i, i2c, config=sensor))
             if self.sensors[-1].online and sensor.angle != -1:
                 self.count += 1
-            time.sleep(0.1)
 
     def read(self):
         for sensor in self.sensors:
@@ -98,7 +103,7 @@ class SensorArray:
         for sensor in range(len(self.sensors)):
             print("{0: >8} ".format(str(sensor) + ". TOF"), end="")
         print(" ")
-        
+
     def print(self):
         for sensor in self.sensors:
             print("{0: >8} ".format(round(sensor.value)), end="")

@@ -28,16 +28,16 @@ class Config:
 
     sensors = [
         SensorConfig(board.D4,  True, angle = 0),   # 0
-        SensorConfig(board.D16, True, angle = 30),  # 1
-        SensorConfig(board.D25, True, angle = 60),  # 2
-        SensorConfig(board.D24, True, angle = 90),  # 3
-        SensorConfig(board.D14, True, angle = 120), # 4
-        SensorConfig(board.D15, True, angle = 150), # 5
-        SensorConfig(board.D7, True, angle = 180), # 6
-        SensorConfig(board.D18, True, angle = 210), # 7 
+        SensorConfig(board.D16, False, angle = 30),  # 1
+        SensorConfig(board.D25, False, angle = 60),  # 2
+        SensorConfig(board.D24, False, angle = 90),  # 3
+        SensorConfig(board.D14, False, angle = 120), # 4
+        SensorConfig(board.D15, False, angle = 150), # 5
+        SensorConfig(board.D7, False, angle = 180), # 6
+        SensorConfig(board.D18, False, angle = 210), # 7 
         SensorConfig(board.D8, True, angle = 240), # 8
-        SensorConfig(board.D21, True, angle = 270), # 9
-        SensorConfig(board.D12, True, angle = 300), # 10
+        SensorConfig(board.D21, False, angle = 270), # 9
+        SensorConfig(board.D12, False, angle = 300), # 10
         SensorConfig(board.D20, True, position=SensorPosition.Downward)
     ]
 
