@@ -21,11 +21,11 @@ sa = SensorArray()
 
 HEIGHT_AUTOPILOT = True
 HEIGHT_TARGET = 900 # mm
-heightRegulator = PidRegulator(kp=1, ki = 0.002, kd = 3, mi = 0.95) #Underhover
-heightRegulator = PidRegulator(kp=2.5, ki = 0.05, kd = 20, mi = 0.95)
+#heightRegulator = PidRegulator(kp=1, ki = 0.002, kd = 3, mi = 0.95) #Underhover
+heightRegulator = PidRegulator(kp=1.5, ki = 0.02, kd = 20, mi = 0.95)
 HEIGHT_AUTOPILOT_HOVER_THROTTLE = 1530
 HEIGHT_AUTOPILOT_GAIN = 150
-HEIGHT_AUTOPILOT_VOLTAGE_COMPENSATION = 50
+HEIGHT_AUTOPILOT_VOLTAGE_COMPENSATION = 100
 
 
 AUTONOMOUS = True
