@@ -40,7 +40,7 @@ Further code details and descreption can be found inside the code itself.
 
 ### Example video (Click to open)
 
-[![Autonomous flight example video](./assets/autonomous_hovering_preview.gif)](./assets/autonomous_hovering.mp4)
+[![Autonomous flight example video](./assets/autonomous_hovering_preview.gif)](https://youtu.be/ZrR0bh-Ggdk)
 
 
 ### How to run this example code
@@ -56,7 +56,7 @@ This code is capable of previewing the sensors data. It hosts a webserver, which
 
 ### Example video (Click to open)
 
-[![GUI example video](./assets/gui_sensors.png)](./assets/gui_example.mp4)
+[![GUI example video](./assets/gui_sensors.png)](https://youtu.be/xSEpj36rMqs)
 
 ### How to run this example code
 1) Start up the drone
