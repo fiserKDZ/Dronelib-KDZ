@@ -2,3 +2,4 @@
 - SensorArray - Přidat načítání konfigurace z config.py
 - Přidat autonomous flight (sledování člověka) do keyboardController.py
 - Zdokumentovat keyboardController.py
+- 

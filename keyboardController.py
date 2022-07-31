@@ -2,6 +2,7 @@ import time
 import curses
 from collections import deque
 from itertools import cycle
+from threading import Thread
 
 # from threading import Timer
 
@@ -88,12 +89,15 @@ SLOW_MSGS_LOOP_TIME = 1 / 5  # these messages take a lot of time slowing down th
 
 NO_OF_CYCLES_AVERAGE_GUI_TIME = 10
 
+RUNNING = True
 
 def clip(x, min_x, max_x):
     return max(min(x, max_x), min_x)
 
 
 class CogniflyController():
+    global RUNNING
+
     def __init__(self,
                  udp_distant_ip=None,
                  udp_local_ip=None,
@@ -159,6 +163,7 @@ class CogniflyController():
                 print("An error occurred, probably the serial port is not available")
 
     def _controller(self, screen):
+        global RUNNING
 
         # CMDS = {'roll': DEFAULT_ROLL,
         #         'pitch': DEFAULT_PITCH,
@@ -293,8 +298,6 @@ class CogniflyController():
                     #
 
 
-                    #Height autopilot
-                    sa.read()
 
                     if HEIGHT_AUTOPILOT and self.armed:
                         errorVal = 0.001 * (HEIGHT_TARGET - sa.bottomSensor().value)
@@ -507,13 +510,21 @@ class CogniflyController():
                     average_cycle.popleft()
 
         finally:
+            RUNNING = False
             if self.print_screen:
                 screen.addstr(5, 0, "Disconnected from the FC!")
                 screen.clrtoeol()
             print("Bye!")
 
-
 def main(args):
+    global RUNNING
+    def sensorReader():
+        global RUNNING
+        while RUNNING:
+            sa.read()
+            
+    sensorReader = Thread(target=sensorReader, args=())
+    sensorReader.start()
     ip_send = args.ipsend
     ip_recv = args.iprecv
     port_send = args.portsend
@@ -533,3 +544,4 @@ if __name__ == "__main__":
     parser.add_argument('--obslooptime', type=float, default=None, help='Duration between sending UDP observations.')
     args = parser.parse_args()
     main(args)
+    

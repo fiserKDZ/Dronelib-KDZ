@@ -16,9 +16,9 @@ if not mockData:
     sa = SensorArray()
 
 def readSensorArray(mockData = False):
-    i = 3 #Posun senzorů vpravo
+    i = 0 #Posun senzorů vpravo
     if not mockData: sa.read()
-    for x in range(12):
+    for x in range(sa.count):
         if mockData:
             val = random.randint(0, 1250)
         else:
@@ -27,7 +27,7 @@ def readSensorArray(mockData = False):
             val = 8000
         data[i].filter(val)
         i += 1
-        if i >= 12:
+        if i >= sa.count:
             i = 0
     sensorData = []
     for a in data:
@@ -73,6 +73,6 @@ def video_feed():
 
 if __name__ == '__main__':
     data = []
-    for i in range(12):
+    for i in range(sa.count):
         data.append(AverageFilter(size = 2))
     app.run(host='0.0.0.0', port=80)

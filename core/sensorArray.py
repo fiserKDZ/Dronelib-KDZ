@@ -67,32 +67,14 @@ class SensorArray:
     sensors = []
 
     def __init__(self):
-        
-        offline = [
-            DigitalInOut(board.D7),
-            DigitalInOut(board.D21),
-            DigitalInOut(board.D8),
-            DigitalInOut(board.D12),
-            DigitalInOut(board.D4),
-            DigitalInOut(board.D16),
-            DigitalInOut(board.D25),#5
-            DigitalInOut(board.D24),
-            DigitalInOut(board.D14),
-            DigitalInOut(board.D15),
-            DigitalInOut(board.D18),#10
-        ]
 
-        xshut = [DigitalInOut(board.D20),#DOWN
-
-        ]
+        self.count = 0
 
         i2c = board.I2C()
 
-        for power_pin in offline:
-            power_pin.switch_to_output(value=False)
-        for power_pin in xshut:
+        for sensor in config.sensors:
+            sensor.digitalPin.switch_to_output(value=False)
             # make sure these pins are a digital output, not a digital input
-            power_pin.switch_to_output(value=False)
             # These pins are active when Low, meaning:
             #   if the output signal is LOW, then the VL53L0X sensor is off.
             #   if the output signal is HIGH, then the VL53L0X sensor is on.
@@ -102,8 +84,11 @@ class SensorArray:
         self.sensors = []
 
         # now change the addresses of the VL53L0X sensors
-        for i, powerPin in enumerate(xshut):
-            self.sensors.append(vl53l0x(powerPin, i + 0x30, i, i2c))
+        for i, sensor in enumerate(config.sensors):
+            self.sensors.append(vl53l0x(sensor.digitalPin, i + 0x30, i, i2c, config=sensor))
+            if self.sensors[-1].online and sensor.angle != -1:
+                self.count += 1
+            time.sleep(0.1)
 
     def read(self):
         for sensor in self.sensors:
@@ -113,6 +98,7 @@ class SensorArray:
         for sensor in range(len(self.sensors)):
             print("{0: >8} ".format(str(sensor) + ". TOF"), end="")
         print(" ")
+        
     def print(self):
         for sensor in self.sensors:
             print("{0: >8} ".format(round(sensor.value)), end="")
@@ -120,7 +106,9 @@ class SensorArray:
         print ("", end="\r")
 
     def bottomSensor(self):
-        return self.sensors[-1]
+        for sensor in self.sensors:
+            if sensor.online and sensor.config.angle == -1:
+                return sensor
 
         
 # there is a helpful list of pre-designated I2C addresses for various I2C devices at
