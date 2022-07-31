@@ -94,6 +94,28 @@
 <li>Connect via ssh to the drone, default login is <code>pi</code> and default password is <code>raspberry</code></li>
 <li>Locate the repository folder and run command <code>python3 avoidWalls.py</code></li>
 </ol>
+<h2 id="keyboardcontrollerpy"><a href="http://keyboardController.py">keyboardController.py</a></h2>
+<p>This code is a simple example of controlling the drone with keyboard. It is capable of sending commands to the drone and recieving data from the drone. It implements a different library - YAMSPY - which is capable of sending and recieving data from the drone better, than ours api. It has also been added to the dependencies.</p>
+<p>This code features automatic altitude control, which is based on the drone´s bottom sensor value. This feature can be enabled or disabled at the beginning of the code.</p>
+<p>If turned on, the code features &quot;autonomous mode&quot;, in which it tries to hold positon based on its side sensor array.</p>
+<p>Further code details and descreption can be found inside the code itself.</p>
+<h3 id="how-to-run-this-example-code-1">How to run this example code</h3>
+<ol>
+<li>Start up the drone</li>
+<li>Connect via ssh to the drone, default login is <code>pi</code> and default password is <code>raspberry</code></li>
+<li>Locate the repository folder and run command <code>python3 keyboardController.py</code></li>
+</ol>
+<h2 id="previewcamerapy"><a href="http://previewCamera.py">previewCamera.py</a></h2>
+<p>By running this code, the camera webserver will be started. It will show the live stream of the camera. You can reach the camera stream by opening a browser and typing the drone ip address. The default port is 80 - the default http port. This code can be run the same way as the <a href="http://previewSensors.py">previewSensors.py</a> code, which previews camera including all of the active sensors.</p>
+<p>##<a href="http://previewSensors.py">previewSensors.py</a>
+This code is capable of previewing the sensors data. It hosts a webserver, which can be accessed by opening a browser and typing the drone ip address. The default port is 80 - the default http port. This gui shows the main controll panel including the camera preview, sensors panel, and the main programming gui (which is imported from the Drobockly enviroment, just a placeholder for now).</p>
+<h3 id="how-to-run-this-example-code-2">How to run this example code</h3>
+<ol>
+<li>Start up the drone</li>
+<li>Connect via ssh to the drone, default login is <code>pi</code> and default password is <code>raspberry</code></li>
+<li>Locate the repository folder and run command <code>python3 previewSensors.py</code></li>
+<li>Start a browser on your computer and type the drone ip address and press enter.</li>
+</ol>
 <h2 id="resetboardpy"><a href="http://resetBoard.py">resetBoard.py</a></h2>
 <p>Example code, which resets the drone board. Resseting the board is called after each __init__  of the DroneLib class. As simple as that:</p>
 <pre><code><code><div>#!/usr/bin/env python
@@ -104,7 +126,7 @@ sa = SensorArray()
 if __name__ == &quot;__main__&quot;:
 	drone = DroneLib(&quot;/dev/ttyACM0&quot;)
 </div></code></code></pre>
-<h3 id="how-to-run-this-example-code-1">How to run this example code</h3>
+<h3 id="how-to-run-this-example-code-3">How to run this example code</h3>
 <ol>
 <li>Start up the drone</li>
 <li>Connect via ssh to the drone, default login is <code>pi</code> and default password is <code>raspberry</code></li>

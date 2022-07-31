@@ -2,12 +2,16 @@
 
 DroneLIB is python package for raspberry-pi microcomputers. It is capable of communicating with the Betaflight 4 powered boards, send them controll data, recieve 
 
+![KDZ Zello MK2](./assets/drone_mk2.jpg)
+
 
 # Examples
 
 All ready to launch exapmles are placed in the folder examples. 
 
 ## avoidWalls.py
+This code is deprecated and was replaced by the keyboardController code.
+
 This code takes off and avoids obstacles around the drone. Example usage of sensorArray library.
 
 The code begins with creating an DrobeLib object, which causes the drone to completely preare for it´s flight. Further details can be see in the communication diagram below, which shows, how exactly is the communication done. 
@@ -21,6 +25,44 @@ This code is the most powerful with optical flow cammera bound to the betaflight
 2) Connect via ssh to the drone, default login is ```pi``` and default password is ```raspberry```
 3) Locate the repository folder and run command ```python3 avoidWalls.py```
 
+
+## keyboardController.py
+This code is a simple example of controlling the drone with keyboard. It is capable of sending commands to the drone and recieving data from the drone. It implements a different library - YAMSPY - which is capable of sending and recieving data from the drone better, than ours api. It has also been added to the dependencies.
+
+![Controlls gui example](./assets/gui_control_panel.png)
+
+This code features automatic altitude control, which is based on the drone´s bottom sensor value. This feature can be enabled or disabled at the beginning of the code.
+
+If turned on, the code features "autonomous mode", in which it tries to hold positon based on its side sensor array.
+
+Further code details and descreption can be found inside the code itself.
+
+
+### Example video (Click to open)
+
+[![Autonomous flight example video](./assets/autonomous_hovering_preview.gif)](./assets/autonomous_hovering.mp4)
+
+
+### How to run this example code
+1) Start up the drone
+2) Connect via ssh to the drone, default login is ```pi``` and default password is ```raspberry```
+3) Locate the repository folder and run command ```python3 keyboardController.py```
+
+## previewCamera.py
+By running this code, the camera webserver will be started. It will show the live stream of the camera. You can reach the camera stream by opening a browser and typing the drone ip address. The default port is 80 - the default http port. This code can be run the same way as the previewSensors.py code, which previews camera including all of the active sensors.
+
+## previewSensors.py
+This code is capable of previewing the sensors data. It hosts a webserver, which can be accessed by opening a browser and typing the drone ip address. The default port is 80 - the default http port. This gui shows the main controll panel including the camera preview, sensors panel, and the main programming gui (which is imported from the Drobockly enviroment, just a placeholder for now).
+
+### Example video (Click to open)
+
+[![GUI example video](./assets/gui_sensors.png)](./assets/gui_example.mp4)
+
+### How to run this example code
+1) Start up the drone
+2) Connect via ssh to the drone, default login is ```pi``` and default password is ```raspberry```
+3) Locate the repository folder and run command ```python3 previewSensors.py```
+4) Start a browser on your computer and type the drone ip address and press enter.
 
 ## resetBoard.py
 Example code, which resets the drone board. Resseting the board is called after each \_\_init\_\_  of the DroneLib class. As simple as that:
