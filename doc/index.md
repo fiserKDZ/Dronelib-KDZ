@@ -174,7 +174,7 @@ How different voltages are being distributed:
 graph TD
 classDef rpi fill:#c7053d;
 classDef btf fill:#f5cb42;
-classDef bat fill:#4eaee6;
+classDef bat fill:#f5cb42;
 BAT(1S / 2S Battery):::bat -- 7.4V --> B(Betaflight):::btf
 BAT -- 7.4V --> VR(Voltage regulator)
 VR -- 5V --> PI(Raspberry PI):::rpi
