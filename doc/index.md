@@ -157,7 +157,7 @@ Which protocols are being used among all the components:
 graph TD
 classDef rpi fill:#c7053d;
 classDef btf fill:#f5cb42;
-PI(Raspberry PI):::rpi -- commands over USB serial --> B(Betaflight):::btf
+PI(Raspberry PI):::rpi -- commands over USB serial --> B(INAV):::btf
 PI -- MIPI --> C(Camera)
 B -- telemetry over USB serial --> PI
 B -- 3 pin --> M1(Motor)
