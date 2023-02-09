@@ -156,7 +156,7 @@ Which protocols are being used among all the components:
 ```mermaid
 graph TD
 classDef rpi fill:#c7053d;
-classDef btf fill:#f5cb42;
+classDef btf fill:#008000;
 PI(Raspberry PI):::rpi -- commands over USB serial --> B(INAV):::btf
 PI -- MIPI --> C(Camera)
 B -- telemetry over USB serial --> PI
